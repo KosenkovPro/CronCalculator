@@ -1,23 +1,25 @@
 package pro.kosenkov.croncalculator
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
+import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.Spinner
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import android.widget.ArrayAdapter
-import android.widget.Spinner
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
-import android.widget.CheckBox
-import android.widget.LinearLayout
 
 class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -68,6 +70,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupFormatControls() {
+        val cbIncludeSeconds = findViewById<CheckBox>(R.id.cbIncludeSeconds)
+        val layoutSeconds = findViewById<LinearLayout>(R.id.layoutSeconds)
+        val etSeconds = findViewById<EditText>(R.id.etSeconds)
+
+        cbIncludeSeconds.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                layoutSeconds.visibility = View.VISIBLE
+                if (etSeconds.text.toString().trim().isEmpty()) {
+                    etSeconds.setText("0")
+                }
+            } else {
+                layoutSeconds.visibility = View.GONE
+            }
+        }
+    }
+
     private fun generateCronExpression() {
         val cbIncludeSeconds = findViewById<CheckBox>(R.id.cbIncludeSeconds)
 
@@ -77,15 +96,29 @@ class MainActivity : AppCompatActivity() {
         val etDayOfMonth = findViewById<EditText>(R.id.etDayOfMonth)
         val tvResult = findViewById<TextView>(R.id.tvResult)
 
+        val seconds = normalizeField(etSeconds.text.toString())
         val minutes = normalizeField(etMinutes.text.toString())
         val hours = normalizeField(etHours.text.toString())
         val dayOfMonth = normalizeField(etDayOfMonth.text.toString())
         val month = getSelectedMonth()
         val dayOfWeek = getSelectedDayOfWeek()
 
+        val validationError = validateCronFields(
+            includeSeconds = cbIncludeSeconds.isChecked,
+            seconds = seconds,
+            minutes = minutes,
+            hours = hours,
+            dayOfMonth = dayOfMonth
+        )
+
+        if (validationError != null) {
+            Toast.makeText(this, validationError, Toast.LENGTH_LONG).show()
+            return
+        }
+
         val cronExpression = if (cbIncludeSeconds.isChecked) {
-            val seconds = getSecondsValue()
-            "$seconds $minutes $hours $dayOfMonth $month $dayOfWeek"
+            val finalSeconds = if (seconds == "*") "0" else seconds
+            "$finalSeconds $minutes $hours $dayOfMonth $month $dayOfWeek"
         } else {
             "$minutes $hours $dayOfMonth $month $dayOfWeek"
         }
@@ -101,21 +134,85 @@ class MainActivity : AppCompatActivity() {
     private fun getSelectedMonth(): String {
         val spinnerMonth = findViewById<Spinner>(R.id.spinnerMonth)
         val selected = spinnerMonth.selectedItem.toString()
-
-        return when {
-            selected.startsWith("*") -> "*"
-            else -> selected
-        }
+        return if (selected.startsWith("*")) "*" else selected
     }
 
     private fun getSelectedDayOfWeek(): String {
         val spinnerDayOfWeek = findViewById<Spinner>(R.id.spinnerDayOfWeek)
         val selected = spinnerDayOfWeek.selectedItem.toString()
+        return if (selected.startsWith("*")) "*" else selected
+    }
 
-        return when {
-            selected.startsWith("*") -> "*"
-            else -> selected
+    private fun validateCronFields(
+        includeSeconds: Boolean,
+        seconds: String,
+        minutes: String,
+        hours: String,
+        dayOfMonth: String
+    ): String? {
+        if (includeSeconds) {
+            val error = validateSimpleCronPart(
+                value = seconds,
+                min = 0,
+                max = 59,
+                fieldName = "Секунды"
+            )
+            if (error != null) return error
         }
+
+        validateSimpleCronPart(
+            value = minutes,
+            min = 0,
+            max = 59,
+            fieldName = "Минуты"
+        )?.let { return it }
+
+        validateSimpleCronPart(
+            value = hours,
+            min = 0,
+            max = 23,
+            fieldName = "Часы"
+        )?.let { return it }
+
+        validateSimpleCronPart(
+            value = dayOfMonth,
+            min = 1,
+            max = 31,
+            fieldName = "День месяца"
+        )?.let { return it }
+
+        return null
+    }
+
+    private fun validateSimpleCronPart(
+        value: String,
+        min: Int,
+        max: Int,
+        fieldName: String
+    ): String? {
+        if (value == "*") {
+            return null
+        }
+
+        if (value.startsWith("*/")) {
+            val stepPart = value.removePrefix("*/")
+            val step = stepPart.toIntOrNull()
+            if (step == null || step <= 0) {
+                return "$fieldName: шаг должен быть положительным числом, например */5"
+            }
+            return null
+        }
+
+        val number = value.toIntOrNull()
+        if (number == null) {
+            return "$fieldName: допустимы только *, число или шаг вида */5"
+        }
+
+        if (number !in min..max) {
+            return "$fieldName: допустимый диапазон $min..$max"
+        }
+
+        return null
     }
 
     private fun copyResultToClipboard() {
@@ -132,28 +229,5 @@ class MainActivity : AppCompatActivity() {
         clipboard.setPrimaryClip(clip)
 
         Toast.makeText(this, "Скопировано: $text", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun setupFormatControls() {
-        val cbIncludeSeconds = findViewById<CheckBox>(R.id.cbIncludeSeconds)
-        val layoutSeconds = findViewById<LinearLayout>(R.id.layoutSeconds)
-        val etSeconds = findViewById<EditText>(R.id.etSeconds)
-
-        cbIncludeSeconds.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                layoutSeconds.visibility = android.view.View.VISIBLE
-                if (etSeconds.text.toString().trim().isEmpty()) {
-                    etSeconds.setText("0")
-                }
-            } else {
-                layoutSeconds.visibility = android.view.View.GONE
-            }
-        }
-    }
-
-    private fun getSecondsValue(): String {
-        val etSeconds = findViewById<EditText>(R.id.etSeconds)
-        val value = etSeconds.text.toString().trim()
-        return if (value.isEmpty()) "0" else value
     }
 }
