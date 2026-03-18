@@ -53,7 +53,9 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/seconds" />
+                android:layout_marginTop="12dp"
+                android:text="@string/seconds"
+                android:textStyle="bold" />
 
             <EditText
                 android:id="@+id/etSeconds"
@@ -65,29 +67,47 @@
                 android:text="0" />
         </LinearLayout>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/minutes"
+            android:textStyle="bold" />
+
         <EditText
             android:id="@+id/etMinutes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:hint="@string/hint_minutes"
             android:inputType="text"
             android:minHeight="48dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/hours"
+            android:textStyle="bold" />
 
         <EditText
             android:id="@+id/etHours"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:hint="@string/hint_hours"
             android:inputType="text"
             android:minHeight="48dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/day_of_month"
+            android:textStyle="bold" />
 
         <EditText
             android:id="@+id/etDayOfMonth"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:hint="@string/hint_day_of_month"
             android:inputType="text"
             android:minHeight="48dp" />
@@ -96,7 +116,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="@string/month" />
+            android:text="@string/month"
+            android:textStyle="bold" />
 
         <Spinner
             android:id="@+id/spinnerMonth"
@@ -107,7 +128,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="@string/day_of_week" />
+            android:text="@string/day_of_week"
+            android:textStyle="bold" />
 
         <Spinner
             android:id="@+id/spinnerDayOfWeek"
