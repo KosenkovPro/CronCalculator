@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.appcompat.app.AlertDialog
+import android.widget.ScrollView
 
 class MainActivity : AppCompatActivity() {
 
@@ -60,21 +61,71 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupButtons() {
         val btnGenerate = findViewById<Button>(R.id.btnGenerate)
-        val btnCopy = findViewById<Button>(R.id.btnCopy)
         val btnDetails = findViewById<Button>(R.id.btnDetails)
 
         btnGenerate.setOnClickListener {
-            generateCronExpression()
-        }
-
-        btnCopy.setOnClickListener {
-            copyResultToClipboard()
+            generateCronExpressionAndCopy()
         }
 
         btnDetails.setOnClickListener {
             showDetailsDialog()
         }
     }
+
+    private fun generateCronExpressionAndCopy() {
+        val cbIncludeSeconds = findViewById<CheckBox>(R.id.cbIncludeSeconds)
+
+        val etSeconds = findViewById<EditText>(R.id.etSeconds)
+        val etMinutes = findViewById<EditText>(R.id.etMinutes)
+        val etHours = findViewById<EditText>(R.id.etHours)
+        val etDayOfMonth = findViewById<EditText>(R.id.etDayOfMonth)
+        val tvResult = findViewById<TextView>(R.id.tvResult)
+        val scrollView = findViewById<ScrollView>(R.id.scrollViewMain)
+
+        val seconds = normalizeField(etSeconds.text.toString())
+        val minutes = normalizeField(etMinutes.text.toString())
+        val hours = normalizeField(etHours.text.toString())
+        val dayOfMonth = normalizeField(etDayOfMonth.text.toString())
+        val month = getSelectedMonth()
+        val dayOfWeek = getSelectedDayOfWeek()
+
+        val validationError = validateCronFields(
+            includeSeconds = cbIncludeSeconds.isChecked,
+            seconds = seconds,
+            minutes = minutes,
+            hours = hours,
+            dayOfMonth = dayOfMonth
+        )
+
+        if (validationError != null) {
+            Toast.makeText(this, validationError, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val cronExpression = if (cbIncludeSeconds.isChecked) {
+            val finalSeconds = if (seconds == "*") "0" else seconds
+            "$finalSeconds $minutes $hours $dayOfMonth $month $dayOfWeek"
+        } else {
+            "$minutes $hours $dayOfMonth $month $dayOfWeek"
+        }
+
+        tvResult.text = cronExpression
+        copyTextToClipboard(cronExpression)
+
+        scrollView.post {
+            scrollView.smoothScrollTo(0, tvResult.bottom)
+        }
+
+        Toast.makeText(this, "Сгенерировано и скопировано: $cronExpression", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun copyTextToClipboard(text: String) {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("cron_expression", text)
+        clipboard.setPrimaryClip(clip)
+    }
+
+
 
     private fun showDetailsDialog() {
         AlertDialog.Builder(this)
