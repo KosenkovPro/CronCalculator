@@ -27,6 +27,9 @@
     <string name="hint_month">Например: *</string>
     <string name="hint_day_of_week">Например: MON-FRI</string>
 
+    <string name="enable_seconds">Включить секунды в выражение (для Spring)</string>
+    <string name="hint_seconds_default">Например: 0</string>
+
     <string name="default_result">0 */5 * * * *</string>
 
     <string-array name="months_array">

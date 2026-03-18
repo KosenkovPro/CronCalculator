@@ -14,6 +14,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.CheckBox
+import android.widget.LinearLayout
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,6 +25,7 @@ class MainActivity : AppCompatActivity() {
 
         setupSpinners()
         setupButtons()
+        setupFormatControls()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -66,22 +69,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun generateCronExpression() {
+        val cbIncludeSeconds = findViewById<CheckBox>(R.id.cbIncludeSeconds)
+
         val etSeconds = findViewById<EditText>(R.id.etSeconds)
         val etMinutes = findViewById<EditText>(R.id.etMinutes)
         val etHours = findViewById<EditText>(R.id.etHours)
         val etDayOfMonth = findViewById<EditText>(R.id.etDayOfMonth)
-
         val tvResult = findViewById<TextView>(R.id.tvResult)
 
-        val seconds = normalizeField(etSeconds.text.toString())
         val minutes = normalizeField(etMinutes.text.toString())
         val hours = normalizeField(etHours.text.toString())
         val dayOfMonth = normalizeField(etDayOfMonth.text.toString())
-
         val month = getSelectedMonth()
         val dayOfWeek = getSelectedDayOfWeek()
 
-        val cronExpression = "$seconds $minutes $hours $dayOfMonth $month $dayOfWeek"
+        val cronExpression = if (cbIncludeSeconds.isChecked) {
+            val seconds = getSecondsValue()
+            "$seconds $minutes $hours $dayOfMonth $month $dayOfWeek"
+        } else {
+            "$minutes $hours $dayOfMonth $month $dayOfWeek"
+        }
+
         tvResult.text = cronExpression
     }
 
@@ -124,5 +132,28 @@ class MainActivity : AppCompatActivity() {
         clipboard.setPrimaryClip(clip)
 
         Toast.makeText(this, "Скопировано: $text", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun setupFormatControls() {
+        val cbIncludeSeconds = findViewById<CheckBox>(R.id.cbIncludeSeconds)
+        val layoutSeconds = findViewById<LinearLayout>(R.id.layoutSeconds)
+        val etSeconds = findViewById<EditText>(R.id.etSeconds)
+
+        cbIncludeSeconds.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                layoutSeconds.visibility = android.view.View.VISIBLE
+                if (etSeconds.text.toString().trim().isEmpty()) {
+                    etSeconds.setText("0")
+                }
+            } else {
+                layoutSeconds.visibility = android.view.View.GONE
+            }
+        }
+    }
+
+    private fun getSecondsValue(): String {
+        val etSeconds = findViewById<EditText>(R.id.etSeconds)
+        val value = etSeconds.text.toString().trim()
+        return if (value.isEmpty()) "0" else value
     }
 }

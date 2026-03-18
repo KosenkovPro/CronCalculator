@@ -36,14 +36,34 @@
             android:text="@string/description"
             android:textSize="14sp" />
 
-        <EditText
-            android:id="@+id/etSeconds"
+        <CheckBox
+            android:id="@+id/cbIncludeSeconds"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:hint="@string/hint_seconds"
-            android:inputType="text"
-            android:minHeight="48dp" />
+            android:text="@string/enable_seconds" />
+
+        <LinearLayout
+            android:id="@+id/layoutSeconds"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/seconds" />
+
+            <EditText
+                android:id="@+id/etSeconds"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/hint_seconds"
+                android:inputType="text"
+                android:minHeight="48dp"
+                android:text="0" />
+        </LinearLayout>
 
         <EditText
             android:id="@+id/etMinutes"
