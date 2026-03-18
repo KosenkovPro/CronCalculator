@@ -1,0 +1,58 @@
+<resources>
+    <string name="app_name">Генератор cron-выражений</string>
+    <string name="title_en">Cron Calculator</string>
+
+    <string name="description">
+        Cron выражение — это компактный формат расписания для запуска периодических задач.
+        Он представляет собой 5 или 6 элементов, разделённых пробелами.
+        В Unix системах используется 5 элементов, а в Spring — 6 элементов с точностью до секунды.
+        Для генерации расписания в формате cron выберите нужную периодичность.
+    </string>
+
+    <string name="seconds">Секунды</string>
+    <string name="minutes">Минуты</string>
+    <string name="hours">Часы</string>
+    <string name="day_of_month">День месяца</string>
+    <string name="month">Месяц</string>
+    <string name="day_of_week">День недели</string>
+
+    <string name="generate">Сгенерировать</string>
+    <string name="copy">Копировать</string>
+    <string name="result">Результат</string>
+
+    <string name="hint_seconds">Например: 0</string>
+    <string name="hint_minutes">Например: */5</string>
+    <string name="hint_hours">Например: *</string>
+    <string name="hint_day_of_month">Например: *</string>
+    <string name="hint_month">Например: *</string>
+    <string name="hint_day_of_week">Например: MON-FRI</string>
+
+    <string name="default_result">0 */5 * * * *</string>
+
+    <string-array name="months_array">
+        <item>* (каждый месяц)</item>
+        <item>JAN</item>
+        <item>FEB</item>
+        <item>MAR</item>
+        <item>APR</item>
+        <item>MAY</item>
+        <item>JUN</item>
+        <item>JUL</item>
+        <item>AUG</item>
+        <item>SEP</item>
+        <item>OCT</item>
+        <item>NOV</item>
+        <item>DEC</item>
+    </string-array>
+
+    <string-array name="days_of_week_array">
+        <item>* (каждый день)</item>
+        <item>MON</item>
+        <item>TUE</item>
+        <item>WED</item>
+        <item>THU</item>
+        <item>FRI</item>
+        <item>SAT</item>
+        <item>SUN</item>
+    </string-array>
+</resources>
