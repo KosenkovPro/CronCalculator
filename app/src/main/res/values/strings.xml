@@ -32,6 +32,11 @@
 
     <string name="default_result">0 */5 * * * *</string>
 
+    <string name="details">Подробная информация</string>
+    <string name="details_title">Что такое cron-выражение</string>
+
+    <string name="ok">OK</string>
+
     <string-array name="months_array">
         <item>* (каждый месяц)</item>
         <item>JAN</item>

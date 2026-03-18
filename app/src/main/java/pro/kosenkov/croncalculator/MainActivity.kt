@@ -17,6 +17,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.appcompat.app.AlertDialog
 
 class MainActivity : AppCompatActivity() {
 
@@ -60,6 +61,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupButtons() {
         val btnGenerate = findViewById<Button>(R.id.btnGenerate)
         val btnCopy = findViewById<Button>(R.id.btnCopy)
+        val btnDetails = findViewById<Button>(R.id.btnDetails)
 
         btnGenerate.setOnClickListener {
             generateCronExpression()
@@ -68,6 +70,18 @@ class MainActivity : AppCompatActivity() {
         btnCopy.setOnClickListener {
             copyResultToClipboard()
         }
+
+        btnDetails.setOnClickListener {
+            showDetailsDialog()
+        }
+    }
+
+    private fun showDetailsDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.details_title))
+            .setMessage(getString(R.string.description))
+            .setPositiveButton(getString(R.string.ok), null)
+            .show()
     }
 
     private fun setupFormatControls() {

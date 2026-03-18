@@ -28,13 +28,12 @@
             android:text="@string/title_en"
             android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/tvDescription"
+        <Button
+            android:id="@+id/btnDetails"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="@string/description"
-            android:textSize="14sp" />
+            android:text="@string/details" />
 
         <CheckBox
             android:id="@+id/cbIncludeSeconds"
