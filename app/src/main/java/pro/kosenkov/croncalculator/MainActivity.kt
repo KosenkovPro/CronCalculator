@@ -3,12 +3,14 @@ package pro.kosenkov.croncalculator
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import pro.kosenkov.croncalculator.databinding.ActivityMainBinding
 import pro.kosenkov.croncalculator.domain.CronExpressionBuilder
 import pro.kosenkov.croncalculator.domain.CronHumanReadableFormatter
 import pro.kosenkov.croncalculator.domain.CronValidator
@@ -17,50 +19,23 @@ import pro.kosenkov.croncalculator.utils.ClipboardUtils
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var cbIncludeSeconds: CheckBox
-    private lateinit var layoutSeconds: LinearLayout
-    private lateinit var etSeconds: EditText
-    private lateinit var etMinutes: EditText
-    private lateinit var etHours: EditText
-    private lateinit var etDayOfMonth: EditText
-    private lateinit var spinnerMonth: Spinner
-    private lateinit var spinnerDayOfWeek: Spinner
-    private lateinit var tvResult: TextView
-    private lateinit var scrollView: ScrollView
-    private lateinit var btnGenerate: Button
-    private lateinit var btnDetails: Button
-    private lateinit var btnShare: Button
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
 
-        bindViews()
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         setupSpinners()
         setupButtons()
         setupFormatControls()
         setupInsets()
     }
 
-    private fun bindViews() {
-        cbIncludeSeconds = findViewById(R.id.cbIncludeSeconds)
-        layoutSeconds = findViewById(R.id.layoutSeconds)
-        etSeconds = findViewById(R.id.etSeconds)
-        etMinutes = findViewById(R.id.etMinutes)
-        etHours = findViewById(R.id.etHours)
-        etDayOfMonth = findViewById(R.id.etDayOfMonth)
-        spinnerMonth = findViewById(R.id.spinnerMonth)
-        spinnerDayOfWeek = findViewById(R.id.spinnerDayOfWeek)
-        tvResult = findViewById(R.id.tvResult)
-        scrollView = findViewById(R.id.scrollViewMain)
-        btnGenerate = findViewById(R.id.btnGenerate)
-        btnDetails = findViewById(R.id.btnDetails)
-        btnShare = findViewById(R.id.btnShare)
-    }
-
     private fun setupInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
@@ -74,7 +49,7 @@ class MainActivity : AppCompatActivity() {
             android.R.layout.simple_spinner_item
         )
         monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerMonth.adapter = monthAdapter
+        binding.spinnerMonth.adapter = monthAdapter
 
         val dayAdapter = ArrayAdapter.createFromResource(
             this,
@@ -82,24 +57,24 @@ class MainActivity : AppCompatActivity() {
             android.R.layout.simple_spinner_item
         )
         dayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerDayOfWeek.adapter = dayAdapter
+        binding.spinnerDayOfWeek.adapter = dayAdapter
     }
 
     private fun setupButtons() {
-        btnGenerate.setOnClickListener { onGenerateClicked() }
-        btnDetails.setOnClickListener { showDetailsDialog() }
-        btnShare.setOnClickListener { shareCronExpression() }
+        binding.btnGenerate.setOnClickListener { onGenerateClicked() }
+        binding.btnDetails.setOnClickListener { showDetailsDialog() }
+        binding.btnShare.setOnClickListener { shareCronExpression() }
     }
 
     private fun setupFormatControls() {
-        cbIncludeSeconds.setOnCheckedChangeListener { _, isChecked ->
+        binding.cbIncludeSeconds.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                layoutSeconds.visibility = View.VISIBLE
-                if (etSeconds.text.toString().trim().isEmpty()) {
-                    etSeconds.setText("0")
+                binding.layoutSeconds.visibility = View.VISIBLE
+                if (binding.etSeconds.text.toString().trim().isEmpty()) {
+                    binding.etSeconds.setText("0")
                 }
             } else {
-                layoutSeconds.visibility = View.GONE
+                binding.layoutSeconds.visibility = View.GONE
             }
         }
     }
@@ -114,19 +89,19 @@ class MainActivity : AppCompatActivity() {
         }
 
         val cronExpression = CronExpressionBuilder.build(input)
-        tvResult.text = cronExpression
+        binding.tvResult.text = cronExpression
 
         ClipboardUtils.copyText(this, "cron_expression", cronExpression)
 
-        scrollView.post {
-            scrollView.smoothScrollTo(0, tvResult.bottom)
+        binding.scrollViewMain.post {
+            binding.scrollViewMain.smoothScrollTo(0, binding.tvResult.bottom)
         }
 
         showToast("Сгенерировано и скопировано: $cronExpression")
     }
 
     private fun shareCronExpression() {
-        val cron = tvResult.text.toString().trim()
+        val cron = binding.tvResult.text.toString().trim()
 
         if (cron.isEmpty()) {
             showToast("Сначала сгенерируйте выражение")
@@ -164,11 +139,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun readCronInput(): CronInput {
         return CronInput(
-            includeSeconds = cbIncludeSeconds.isChecked,
-            seconds = normalizeField(etSeconds.text.toString()),
-            minutes = normalizeField(etMinutes.text.toString()),
-            hours = normalizeField(etHours.text.toString()),
-            dayOfMonth = normalizeField(etDayOfMonth.text.toString()),
+            includeSeconds = binding.cbIncludeSeconds.isChecked,
+            seconds = normalizeField(binding.etSeconds.text.toString()),
+            minutes = normalizeField(binding.etMinutes.text.toString()),
+            hours = normalizeField(binding.etHours.text.toString()),
+            dayOfMonth = normalizeField(binding.etDayOfMonth.text.toString()),
             month = getSelectedMonth(),
             dayOfWeek = getSelectedDayOfWeek()
         )
@@ -180,12 +155,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getSelectedMonth(): String {
-        val selected = spinnerMonth.selectedItem.toString()
+        val selected = binding.spinnerMonth.selectedItem.toString()
         return if (selected.startsWith("*")) "*" else selected
     }
 
     private fun getSelectedDayOfWeek(): String {
-        val selected = spinnerDayOfWeek.selectedItem.toString()
+        val selected = binding.spinnerDayOfWeek.selectedItem.toString()
         return if (selected.startsWith("*")) "*" else selected
     }
 
