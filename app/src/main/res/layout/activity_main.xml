@@ -120,10 +120,13 @@
             android:text="@string/month"
             android:textStyle="bold" />
 
-        <Spinner
-            android:id="@+id/spinnerMonth"
+        <EditText
+            android:id="@+id/etMonth"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_month"
+            android:inputType="text"
+            android:minHeight="48dp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -132,10 +135,13 @@
             android:text="@string/day_of_week"
             android:textStyle="bold" />
 
-        <Spinner
-            android:id="@+id/spinnerDayOfWeek"
+        <EditText
+            android:id="@+id/etDayOfWeek"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_day_of_week"
+            android:inputType="text"
+            android:minHeight="48dp" />
 
         <Button
             android:id="@+id/btnGenerate"

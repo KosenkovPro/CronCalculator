@@ -3,7 +3,6 @@ package pro.kosenkov.croncalculator
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
@@ -28,7 +27,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupSpinners()
         setupButtons()
         setupFormatControls()
         setupInsets()
@@ -40,24 +38,6 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-    }
-
-    private fun setupSpinners() {
-        val monthAdapter = ArrayAdapter.createFromResource(
-            this,
-            R.array.months_array,
-            android.R.layout.simple_spinner_item
-        )
-        monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerMonth.adapter = monthAdapter
-
-        val dayAdapter = ArrayAdapter.createFromResource(
-            this,
-            R.array.days_of_week_array,
-            android.R.layout.simple_spinner_item
-        )
-        dayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerDayOfWeek.adapter = dayAdapter
     }
 
     private fun setupButtons() {
@@ -144,24 +124,14 @@ class MainActivity : AppCompatActivity() {
             minutes = normalizeField(binding.etMinutes.text.toString()),
             hours = normalizeField(binding.etHours.text.toString()),
             dayOfMonth = normalizeField(binding.etDayOfMonth.text.toString()),
-            month = getSelectedMonth(),
-            dayOfWeek = getSelectedDayOfWeek()
+            month = normalizeField(binding.etMonth.text.toString()),
+            dayOfWeek = normalizeField(binding.etDayOfWeek.text.toString())
         )
     }
 
     private fun normalizeField(value: String): String {
         val trimmed = value.trim()
         return if (trimmed.isEmpty()) "*" else trimmed
-    }
-
-    private fun getSelectedMonth(): String {
-        val selected = binding.spinnerMonth.selectedItem.toString()
-        return if (selected.startsWith("*")) "*" else selected
-    }
-
-    private fun getSelectedDayOfWeek(): String {
-        val selected = binding.spinnerDayOfWeek.selectedItem.toString()
-        return if (selected.startsWith("*")) "*" else selected
     }
 
     private fun showToast(message: String) {

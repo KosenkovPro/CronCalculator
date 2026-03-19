@@ -35,6 +35,20 @@ object CronValidator {
             fieldName = "День месяца"
         )?.let { return it }
 
+        validateCronPart(
+            value = input.month,
+            min = 1,
+            max = 12,
+            fieldName = "Месяц"
+        )?.let { return it }
+
+        validateCronPart(
+            value = input.dayOfWeek,
+            min = 0,
+            max = 7,
+            fieldName = "День недели"
+        )?.let { return it }
+
         return null
     }
 
