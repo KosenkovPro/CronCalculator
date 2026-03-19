@@ -65,4 +65,6 @@
         <item>SAT</item>
         <item>SUN</item>
     </string-array>
+
+    <string name="share">Поделиться</string>
 </resources>

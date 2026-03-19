@@ -19,6 +19,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.appcompat.app.AlertDialog
 import android.widget.ScrollView
+import android.content.Intent
 
 class MainActivity : AppCompatActivity() {
 
@@ -62,6 +63,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupButtons() {
         val btnGenerate = findViewById<Button>(R.id.btnGenerate)
         val btnDetails = findViewById<Button>(R.id.btnDetails)
+        val btnShare = findViewById<Button>(R.id.btnShare)
 
         btnGenerate.setOnClickListener {
             generateCronExpressionAndCopy()
@@ -69,6 +71,105 @@ class MainActivity : AppCompatActivity() {
 
         btnDetails.setOnClickListener {
             showDetailsDialog()
+        }
+
+        btnShare.setOnClickListener {
+            shareCronExpression()
+        }
+    }
+
+    private fun shareCronExpression() {
+        val tvResult = findViewById<TextView>(R.id.tvResult)
+        val cron = tvResult.text.toString().trim()
+
+        if (cron.isEmpty()) {
+            Toast.makeText(this, "Сначала сгенерируйте выражение", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val humanReadable = buildHumanReadableDescription(cron)
+
+        val shareText = """
+        Cron выражение:
+        $cron
+
+        В человекочитаемом виде:
+        $humanReadable
+    """.trimIndent()
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, shareText)
+        }
+
+        startActivity(Intent.createChooser(intent, "Поделиться через"))
+    }
+
+    private fun buildHumanReadableDescription(cron: String): String {
+        val parts = cron.split(" ")
+
+        if (parts.size !in 5..6) {
+            return "Не удалось распознать cron-выражение"
+        }
+
+        val hasSeconds = parts.size == 6
+
+        val offset = if (hasSeconds) 1 else 0
+
+        val seconds = if (hasSeconds) parts[0] else "0"
+        val minutes = parts[offset + 0]
+        val hours = parts[offset + 1]
+        val dayOfMonth = parts[offset + 2]
+        val month = parts[offset + 3]
+        val dayOfWeek = parts[offset + 4]
+
+        // 1. Частые случаи — делаем красиво
+        if (minutes.startsWith("*/") && hours == "*" && dayOfMonth == "*" && month == "*" && dayOfWeek == "*") {
+            return "Каждые ${minutes.removePrefix("*/")} минут"
+        }
+
+        if (minutes == "*" && hours == "*" && dayOfMonth == "*" && month == "*" && dayOfWeek == "*") {
+            return "Каждую минуту"
+        }
+
+        // 2. Конкретное время
+        val time = formatTime(hours, minutes)
+
+        // 3. День недели
+        if (dayOfWeek != "*") {
+            return "${describeDayOfWeekPretty(dayOfWeek)} в $time"
+        }
+
+        // 4. День месяца
+        if (dayOfMonth != "*") {
+            return "Каждый $dayOfMonth день месяца в $time"
+        }
+
+        // 5. По умолчанию — каждый день
+        return "Каждый день в $time"
+    }
+
+    private fun formatTime(hours: String, minutes: String): String {
+        val h = hours.toIntOrNull()
+        val m = minutes.toIntOrNull()
+
+        return if (h != null && m != null) {
+            String.format("%02d:%02d", h, m)
+        } else {
+            "$hours:$minutes"
+        }
+    }
+
+    private fun describeDayOfWeekPretty(value: String): String {
+        return when (value) {
+            "1" -> "Каждый понедельник"
+            "2" -> "Каждый вторник"
+            "3" -> "Каждую среду"
+            "4" -> "Каждый четверг"
+            "5" -> "Каждую пятницу"
+            "6" -> "Каждую субботу"
+            "0", "7" -> "Каждое воскресенье"
+            else -> "В день недели: $value"
         }
     }
 
