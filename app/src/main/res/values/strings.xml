@@ -20,12 +20,14 @@
     <string name="copy">Копировать</string>
     <string name="result">Результат</string>
 
-    <string name="hint_seconds">Например: 0</string>
-    <string name="hint_minutes">Например: */5</string>
-    <string name="hint_hours">Например: *</string>
-    <string name="hint_day_of_month">Например: *</string>
+    <string name="hint_seconds">0-59, * или */5</string>
+    <string name="hint_minutes">0-59, * или */5</string>
+    <string name="hint_hours">0-23, * или */2</string>
+    <string name="hint_day_of_month">1-31, * или */1</string>
     <string name="hint_month">Например: *</string>
     <string name="hint_day_of_week">Например: MON-FRI</string>
+
+
 
     <string name="enable_seconds">Включить секунды в выражение (для Spring)</string>
     <string name="hint_seconds_default">Например: 0</string>
