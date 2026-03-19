@@ -1,127 +1,145 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/cronDetailsRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:orientation="vertical">
 
-    <LinearLayout
+    <!-- 🔝 Toolbar со стрелкой назад -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbarCron"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:title="@string/cron_details_screen_title"
+        android:titleTextColor="@android:color/white" />
 
-        <TextView
-            android:id="@+id/tvCronSummaryTitle"
+    <!-- 📜 Основной контент -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/cron_summary_title"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:paddingBottom="16dp" />
+            android:orientation="vertical"
+            android:padding="20dp">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/cron_summary_intro"
-            android:textSize="16sp"
-            android:paddingBottom="16dp" />
+            <TextView
+                android:id="@+id/tvCronSummaryTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cron_summary_title"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:paddingBottom="16dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/cron_block_syntax_title"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cron_summary_intro"
+                android:textSize="16sp"
+                android:paddingBottom="16dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/cron_block_syntax_text"
-            android:textSize="16sp"
-            android:paddingBottom="16dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cron_block_syntax_title"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/cron_block_special_title"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cron_block_syntax_text"
+                android:textSize="16sp"
+                android:paddingBottom="16dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/cron_block_special_text"
-            android:textSize="16sp"
-            android:paddingBottom="16dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cron_block_special_title"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/cron_block_pitfalls_title"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cron_block_special_text"
+                android:textSize="16sp"
+                android:paddingBottom="16dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/cron_block_pitfalls_text"
-            android:textSize="16sp"
-            android:paddingBottom="16dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cron_block_pitfalls_title"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/cron_block_patterns_title"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cron_block_pitfalls_text"
+                android:textSize="16sp"
+                android:paddingBottom="16dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/cron_block_patterns_text"
-            android:textSize="16sp"
-            android:paddingBottom="16dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cron_block_patterns_title"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/cron_block_safety_title"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cron_block_patterns_text"
+                android:textSize="16sp"
+                android:paddingBottom="16dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/cron_block_safety_text"
-            android:textSize="16sp"
-            android:paddingBottom="16dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cron_block_safety_title"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/cron_block_alternative_title"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cron_block_safety_text"
+                android:textSize="16sp"
+                android:paddingBottom="16dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/cron_block_alternative_text"
-            android:textSize="16sp"
-            android:paddingBottom="24dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cron_block_alternative_title"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp" />
 
-    </LinearLayout>
-</ScrollView>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cron_block_alternative_text"
+                android:textSize="16sp"
+                android:paddingBottom="24dp" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

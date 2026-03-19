@@ -13,18 +13,23 @@ class CronDetailsActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_cron_details)
 
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbarCron)
+        setSupportActionBar(toolbar)
+
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true) // стрелка назад
+            title = getString(R.string.cron_details_screen_title)
+        }
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.cronDetailsRoot)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = getString(R.string.cron_details_screen_title)
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        finish()
+        onBackPressedDispatcher.onBackPressed()
         return true
     }
 }
