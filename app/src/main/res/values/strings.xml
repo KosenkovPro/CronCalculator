@@ -67,4 +67,29 @@
     </string-array>
 
     <string name="share">Поделиться</string>
+
+    <string name="cron_details_screen_title">Подробнее о CRON</string>
+
+    <string name="cron_summary_title">Кратко о CRON</string>
+    <string name="cron_summary_intro">CRON — это планировщик задач в Unix/Linux. Он запускает команды и скрипты по расписанию и обычно проверяет задания раз в минуту.</string>
+
+    <string name="cron_block_syntax_title">Базовый синтаксис</string>
+    <string name="cron_block_syntax_text">Обычное cron-выражение состоит из 5 полей: минута, час, день месяца, месяц и день недели.\n\nПримеры:\n0 * * * * — каждый час\n0 0 * * * — каждый день в полночь\n*/15 * * * * — каждые 15 минут</string>
+
+    <string name="cron_block_special_title">Специальные выражения</string>
+    <string name="cron_block_special_text">Для частых сценариев есть короткие формы:\n@hourly — каждый час\n@daily или @midnight — каждый день\n@weekly — каждую неделю\n@monthly — каждый месяц\n@yearly / @annually — раз в год\n@reboot — при запуске системы</string>
+
+    <string name="cron_block_pitfalls_title">На что обратить внимание</string>
+    <string name="cron_block_pitfalls_text">CRON запускает команды в минимальном окружении. Часто PATH ограничен, не подгружаются пользовательские настройки shell, а относительные пути могут работать не так, как ожидается.\n\nПоэтому лучше всегда указывать абсолютные пути к скриптам, интерпретаторам и логам.</string>
+
+    <string name="cron_block_patterns_title">Продвинутые шаблоны</string>
+    <string name="cron_block_patterns_text">CRON поддерживает:\nДиапазоны: 9–18\nСписки: 1,3,5\nШаги: */5\nКомбинации: 0 8-18/2 * * 1-5\n\nЭто позволяет задавать расписания вроде «каждые 2 часа по будням».</string>
+
+    <string name="cron_block_safety_title">Безопасный запуск задач</string>
+    <string name="cron_block_safety_text">Если задача работает дольше интервала запуска, могут стартовать несколько копий одновременно. Чтобы избежать конфликтов, используют timeout для ограничения времени и flock для блокировки одновременного запуска.\n\nДля отладки важно настраивать логирование, например через перенаправление stdout и stderr.</string>
+
+    <string name="cron_block_alternative_title">Когда нужен не CRON</string>
+    <string name="cron_block_alternative_text">Для простых регулярных задач CRON отлично подходит. Но если нужны зависимости, более точное управление, устойчивость к пропущенным запускам и интеграция с systemd, стоит посмотреть на systemd.timer.</string>
+
+    <string name="details_more_about_cron">Подробнее о CRON</string>
 </resources>

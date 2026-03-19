@@ -233,6 +233,9 @@ class MainActivity : AppCompatActivity() {
             .setTitle(getString(R.string.details_title))
             .setMessage(getString(R.string.description))
             .setPositiveButton(getString(R.string.ok), null)
+            .setNeutralButton(getString(R.string.details_more_about_cron)) { _, _ ->
+                startActivity(Intent(this, CronDetailsActivity::class.java))
+            }
             .show()
     }
 
