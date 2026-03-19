@@ -91,6 +91,68 @@ object CronValidator {
             return null
         }
 
+        // ? — обычно только для "День месяца" и "День недели"
+        if (token == "?") {
+            return if (fieldName == "День месяца" || fieldName == "День недели") {
+                null
+            } else {
+                "$fieldName: символ ? допустим только для полей 'День месяца' и 'День недели'"
+            }
+        }
+
+        // L — обычно только для "День месяца"
+        if (token == "L") {
+            return if (fieldName == "День месяца") {
+                null
+            } else {
+                "$fieldName: символ L допустим только для поля 'День месяца'"
+            }
+        }
+
+        // W — например 15W, только для "День месяца"
+        if (token.endsWith("W")) {
+            if (fieldName != "День месяца") {
+                return "$fieldName: формат W допустим только для поля 'День месяца'"
+            }
+
+            val day = token.removeSuffix("W").toIntOrNull()
+                ?: return "$fieldName: неверный формат W (пример: 15W)"
+
+            if (day !in min..max) {
+                return "$fieldName: допустимый диапазон $min..$max"
+            }
+
+            return null
+        }
+
+        // # — например 2#1, только для "День недели"
+        if (token.contains("#")) {
+            if (fieldName != "День недели") {
+                return "$fieldName: формат # допустим только для поля 'День недели'"
+            }
+
+            val parts = token.split("#")
+            if (parts.size != 2) {
+                return "$fieldName: неверный формат # (пример: 2#1)"
+            }
+
+            val day = parts[0].toIntOrNull()
+                ?: return "$fieldName: неверный день недели в формате #"
+
+            val nth = parts[1].toIntOrNull()
+                ?: return "$fieldName: неверный порядковый номер в формате #"
+
+            if (day !in 0..7) {
+                return "$fieldName: день недели в формате # должен быть в диапазоне 0..7"
+            }
+
+            if (nth !in 1..5) {
+                return "$fieldName: порядковый номер в формате # должен быть в диапазоне 1..5"
+            }
+
+            return null
+        }
+
         // */5
         if (token.startsWith("*/")) {
             val step = token.removePrefix("*/").toIntOrNull()
@@ -135,7 +197,7 @@ object CronValidator {
 
         // одно число
         val number = token.toIntOrNull()
-            ?: return "$fieldName: допустимы *, число, диапазон 1-5, список 1,2,3 или шаг */5"
+            ?: return "$fieldName: допустимы *, число, диапазон 1-5, список 1,2,3, шаг */5, а также специальные форматы Quartz"
 
         if (number !in min..max) {
             return "$fieldName: допустимый диапазон $min..$max"

@@ -35,19 +35,41 @@ object CronHumanReadableFormatter {
 
         val resultParts = mutableListOf<String>()
 
-        if (dayOfWeek != "*") {
+        if (dayOfWeekPart.isNotBlank()) {
             resultParts += dayOfWeekPart
-        } else if (dayOfMonth != "*") {
+        }
+
+        if (dayOfMonthPart.isNotBlank()) {
             resultParts += dayOfMonthPart
         }
 
-        resultParts += timePart
+        val isRepeatingSchedule =
+            minutes == "*" ||
+                    minutes.startsWith("*/")
 
-        if (month != "*") {
+        val shouldAddEveryDay =
+            dayOfWeekPart.isBlank() &&
+                    dayOfMonthPart.isBlank() &&
+                    !isRepeatingSchedule
+
+        if (shouldAddEveryDay) {
+            resultParts += "Каждый день"
+        }
+
+        if (timePart.isNotBlank()) {
+            resultParts += timePart
+        }
+
+        if (monthPart.isNotBlank()) {
             resultParts += monthPart
         }
 
-        val result = resultParts.joinToString(" ")
+        val result = resultParts.joinToString(" ").trim()
+
+        if (result.isEmpty()) {
+            return "Не удалось сформировать описание"
+        }
+
         return result.replaceFirstChar { it.uppercase() }
     }
 
@@ -129,8 +151,17 @@ object CronHumanReadableFormatter {
     }
 
     private fun describeDayOfMonth(value: String): String {
+        if (value == "?") return ""
+
         return when {
-            value == "*" -> "Каждый день"
+            value == "L" -> "В последний день месяца"
+
+            value.endsWith("W") -> {
+                val day = value.removeSuffix("W")
+                "В ближайший рабочий день к $day числу"
+            }
+
+            value == "*" -> ""
 
             isSingleNumber(value) -> "Каждый $value день месяца"
 
@@ -148,19 +179,44 @@ object CronHumanReadableFormatter {
 
     private fun describeMonth(value: String): String {
         return when {
-            value == "*" -> ""
+            value == "*" || value == "?" -> ""
 
-            isSingleNumber(value) -> "в ${monthName(value)}"
+            isSingleNumber(value) -> "в ${monthNamePrepositional(value)}"
 
-            isRange(value) -> "в месяцах ${describeRange(value)}"
+            isRange(value) -> {
+                val (start, end) = value.split("-")
+                "с ${monthNamePrepositional(start)} по ${monthNamePrepositional(end)}"
+            }
 
-            isList(value) -> "в месяцах ${describeListWithMapper(value) { monthName(it) }}"
+            isList(value) -> "в ${describeListWithMapper(value) { monthNamePrepositional(it) }}"
 
-            isRangeWithStep(value) -> "каждые ${extractStep(value)} месяца в диапазоне ${extractRange(value)}"
+            isRangeWithStep(value) -> {
+                val range = extractRange(value)
+                val step = extractStep(value)
+                "каждые $step месяца в диапазоне $range"
+            }
 
             value.startsWith("*/") -> "каждые ${value.removePrefix("*/")} месяца"
 
             else -> "в месяце: $value"
+        }
+    }
+
+    private fun monthNamePrepositional(value: String): String {
+        return when (value) {
+            "1" -> "январе"
+            "2" -> "феврале"
+            "3" -> "марте"
+            "4" -> "апреле"
+            "5" -> "мае"
+            "6" -> "июне"
+            "7" -> "июле"
+            "8" -> "августе"
+            "9" -> "сентябре"
+            "10" -> "октябре"
+            "11" -> "ноябре"
+            "12" -> "декабре"
+            else -> value
         }
     }
 
