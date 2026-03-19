@@ -1,37 +1,65 @@
 package pro.kosenkov.croncalculator
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.Spinner
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.appcompat.app.AlertDialog
-import android.widget.ScrollView
-import android.content.Intent
+import pro.kosenkov.croncalculator.domain.CronExpressionBuilder
+import pro.kosenkov.croncalculator.domain.CronHumanReadableFormatter
+import pro.kosenkov.croncalculator.domain.CronValidator
+import pro.kosenkov.croncalculator.model.CronInput
+import pro.kosenkov.croncalculator.utils.ClipboardUtils
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var cbIncludeSeconds: CheckBox
+    private lateinit var layoutSeconds: LinearLayout
+    private lateinit var etSeconds: EditText
+    private lateinit var etMinutes: EditText
+    private lateinit var etHours: EditText
+    private lateinit var etDayOfMonth: EditText
+    private lateinit var spinnerMonth: Spinner
+    private lateinit var spinnerDayOfWeek: Spinner
+    private lateinit var tvResult: TextView
+    private lateinit var scrollView: ScrollView
+    private lateinit var btnGenerate: Button
+    private lateinit var btnDetails: Button
+    private lateinit var btnShare: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
+        bindViews()
         setupSpinners()
         setupButtons()
         setupFormatControls()
+        setupInsets()
+    }
 
+    private fun bindViews() {
+        cbIncludeSeconds = findViewById(R.id.cbIncludeSeconds)
+        layoutSeconds = findViewById(R.id.layoutSeconds)
+        etSeconds = findViewById(R.id.etSeconds)
+        etMinutes = findViewById(R.id.etMinutes)
+        etHours = findViewById(R.id.etHours)
+        etDayOfMonth = findViewById(R.id.etDayOfMonth)
+        spinnerMonth = findViewById(R.id.spinnerMonth)
+        spinnerDayOfWeek = findViewById(R.id.spinnerDayOfWeek)
+        tvResult = findViewById(R.id.tvResult)
+        scrollView = findViewById(R.id.scrollViewMain)
+        btnGenerate = findViewById(R.id.btnGenerate)
+        btnDetails = findViewById(R.id.btnDetails)
+        btnShare = findViewById(R.id.btnShare)
+    }
+
+    private fun setupInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -40,16 +68,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupSpinners() {
-        val monthSpinner = findViewById<Spinner>(R.id.spinnerMonth)
-        val daySpinner = findViewById<Spinner>(R.id.spinnerDayOfWeek)
-
         val monthAdapter = ArrayAdapter.createFromResource(
             this,
             R.array.months_array,
             android.R.layout.simple_spinner_item
         )
         monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        monthSpinner.adapter = monthAdapter
+        spinnerMonth.adapter = monthAdapter
 
         val dayAdapter = ArrayAdapter.createFromResource(
             this,
@@ -57,193 +82,16 @@ class MainActivity : AppCompatActivity() {
             android.R.layout.simple_spinner_item
         )
         dayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        daySpinner.adapter = dayAdapter
+        spinnerDayOfWeek.adapter = dayAdapter
     }
 
     private fun setupButtons() {
-        val btnGenerate = findViewById<Button>(R.id.btnGenerate)
-        val btnDetails = findViewById<Button>(R.id.btnDetails)
-        val btnShare = findViewById<Button>(R.id.btnShare)
-
-        btnGenerate.setOnClickListener {
-            generateCronExpressionAndCopy()
-        }
-
-        btnDetails.setOnClickListener {
-            showDetailsDialog()
-        }
-
-        btnShare.setOnClickListener {
-            shareCronExpression()
-        }
-    }
-
-    private fun shareCronExpression() {
-        val tvResult = findViewById<TextView>(R.id.tvResult)
-        val cron = tvResult.text.toString().trim()
-
-        if (cron.isEmpty()) {
-            Toast.makeText(this, "Сначала сгенерируйте выражение", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val humanReadable = buildHumanReadableDescription(cron)
-
-        val shareText = """
-        Cron выражение:
-        $cron
-
-        В человекочитаемом виде:
-        $humanReadable
-    """.trimIndent()
-
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, shareText)
-        }
-
-        startActivity(Intent.createChooser(intent, "Поделиться через"))
-    }
-
-    private fun buildHumanReadableDescription(cron: String): String {
-        val parts = cron.split(" ")
-
-        if (parts.size !in 5..6) {
-            return "Не удалось распознать cron-выражение"
-        }
-
-        val hasSeconds = parts.size == 6
-
-        val offset = if (hasSeconds) 1 else 0
-
-        val seconds = if (hasSeconds) parts[0] else "0"
-        val minutes = parts[offset + 0]
-        val hours = parts[offset + 1]
-        val dayOfMonth = parts[offset + 2]
-        val month = parts[offset + 3]
-        val dayOfWeek = parts[offset + 4]
-
-        // 1. Частые случаи — делаем красиво
-        if (minutes.startsWith("*/") && hours == "*" && dayOfMonth == "*" && month == "*" && dayOfWeek == "*") {
-            return "Каждые ${minutes.removePrefix("*/")} минут"
-        }
-
-        if (minutes == "*" && hours == "*" && dayOfMonth == "*" && month == "*" && dayOfWeek == "*") {
-            return "Каждую минуту"
-        }
-
-        // 2. Конкретное время
-        val time = formatTime(hours, minutes)
-
-        // 3. День недели
-        if (dayOfWeek != "*") {
-            return "${describeDayOfWeekPretty(dayOfWeek)} в $time"
-        }
-
-        // 4. День месяца
-        if (dayOfMonth != "*") {
-            return "Каждый $dayOfMonth день месяца в $time"
-        }
-
-        // 5. По умолчанию — каждый день
-        return "Каждый день в $time"
-    }
-
-    private fun formatTime(hours: String, minutes: String): String {
-        val h = hours.toIntOrNull()
-        val m = minutes.toIntOrNull()
-
-        return if (h != null && m != null) {
-            String.format("%02d:%02d", h, m)
-        } else {
-            "$hours:$minutes"
-        }
-    }
-
-    private fun describeDayOfWeekPretty(value: String): String {
-        return when (value) {
-            "1" -> "Каждый понедельник"
-            "2" -> "Каждый вторник"
-            "3" -> "Каждую среду"
-            "4" -> "Каждый четверг"
-            "5" -> "Каждую пятницу"
-            "6" -> "Каждую субботу"
-            "0", "7" -> "Каждое воскресенье"
-            else -> "В день недели: $value"
-        }
-    }
-
-    private fun generateCronExpressionAndCopy() {
-        val cbIncludeSeconds = findViewById<CheckBox>(R.id.cbIncludeSeconds)
-
-        val etSeconds = findViewById<EditText>(R.id.etSeconds)
-        val etMinutes = findViewById<EditText>(R.id.etMinutes)
-        val etHours = findViewById<EditText>(R.id.etHours)
-        val etDayOfMonth = findViewById<EditText>(R.id.etDayOfMonth)
-        val tvResult = findViewById<TextView>(R.id.tvResult)
-        val scrollView = findViewById<ScrollView>(R.id.scrollViewMain)
-
-        val seconds = normalizeField(etSeconds.text.toString())
-        val minutes = normalizeField(etMinutes.text.toString())
-        val hours = normalizeField(etHours.text.toString())
-        val dayOfMonth = normalizeField(etDayOfMonth.text.toString())
-        val month = getSelectedMonth()
-        val dayOfWeek = getSelectedDayOfWeek()
-
-        val validationError = validateCronFields(
-            includeSeconds = cbIncludeSeconds.isChecked,
-            seconds = seconds,
-            minutes = minutes,
-            hours = hours,
-            dayOfMonth = dayOfMonth
-        )
-
-        if (validationError != null) {
-            Toast.makeText(this, validationError, Toast.LENGTH_LONG).show()
-            return
-        }
-
-        val cronExpression = if (cbIncludeSeconds.isChecked) {
-            val finalSeconds = if (seconds == "*") "0" else seconds
-            "$finalSeconds $minutes $hours $dayOfMonth $month $dayOfWeek"
-        } else {
-            "$minutes $hours $dayOfMonth $month $dayOfWeek"
-        }
-
-        tvResult.text = cronExpression
-        copyTextToClipboard(cronExpression)
-
-        scrollView.post {
-            scrollView.smoothScrollTo(0, tvResult.bottom)
-        }
-
-        Toast.makeText(this, "Сгенерировано и скопировано: $cronExpression", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun copyTextToClipboard(text: String) {
-        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("cron_expression", text)
-        clipboard.setPrimaryClip(clip)
-    }
-
-
-
-    private fun showDetailsDialog() {
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.details_title))
-            .setMessage(getString(R.string.description))
-            .setPositiveButton(getString(R.string.ok), null)
-            .setNeutralButton(getString(R.string.details_more_about_cron)) { _, _ ->
-                startActivity(Intent(this, CronDetailsActivity::class.java))
-            }
-            .show()
+        btnGenerate.setOnClickListener { onGenerateClicked() }
+        btnDetails.setOnClickListener { showDetailsDialog() }
+        btnShare.setOnClickListener { shareCronExpression() }
     }
 
     private fun setupFormatControls() {
-        val cbIncludeSeconds = findViewById<CheckBox>(R.id.cbIncludeSeconds)
-        val layoutSeconds = findViewById<LinearLayout>(R.id.layoutSeconds)
-        val etSeconds = findViewById<EditText>(R.id.etSeconds)
-
         cbIncludeSeconds.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 layoutSeconds.visibility = View.VISIBLE
@@ -256,43 +104,74 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun generateCronExpression() {
-        val cbIncludeSeconds = findViewById<CheckBox>(R.id.cbIncludeSeconds)
+    private fun onGenerateClicked() {
+        val input = readCronInput()
 
-        val etSeconds = findViewById<EditText>(R.id.etSeconds)
-        val etMinutes = findViewById<EditText>(R.id.etMinutes)
-        val etHours = findViewById<EditText>(R.id.etHours)
-        val etDayOfMonth = findViewById<EditText>(R.id.etDayOfMonth)
-        val tvResult = findViewById<TextView>(R.id.tvResult)
-
-        val seconds = normalizeField(etSeconds.text.toString())
-        val minutes = normalizeField(etMinutes.text.toString())
-        val hours = normalizeField(etHours.text.toString())
-        val dayOfMonth = normalizeField(etDayOfMonth.text.toString())
-        val month = getSelectedMonth()
-        val dayOfWeek = getSelectedDayOfWeek()
-
-        val validationError = validateCronFields(
-            includeSeconds = cbIncludeSeconds.isChecked,
-            seconds = seconds,
-            minutes = minutes,
-            hours = hours,
-            dayOfMonth = dayOfMonth
-        )
-
+        val validationError = CronValidator.validate(input)
         if (validationError != null) {
-            Toast.makeText(this, validationError, Toast.LENGTH_LONG).show()
+            showToast(validationError)
             return
         }
 
-        val cronExpression = if (cbIncludeSeconds.isChecked) {
-            val finalSeconds = if (seconds == "*") "0" else seconds
-            "$finalSeconds $minutes $hours $dayOfMonth $month $dayOfWeek"
-        } else {
-            "$minutes $hours $dayOfMonth $month $dayOfWeek"
+        val cronExpression = CronExpressionBuilder.build(input)
+        tvResult.text = cronExpression
+
+        ClipboardUtils.copyText(this, "cron_expression", cronExpression)
+
+        scrollView.post {
+            scrollView.smoothScrollTo(0, tvResult.bottom)
         }
 
-        tvResult.text = cronExpression
+        showToast("Сгенерировано и скопировано: $cronExpression")
+    }
+
+    private fun shareCronExpression() {
+        val cron = tvResult.text.toString().trim()
+
+        if (cron.isEmpty()) {
+            showToast("Сначала сгенерируйте выражение")
+            return
+        }
+
+        val humanReadable = CronHumanReadableFormatter.format(cron)
+
+        val shareText = """
+            Cron выражение:
+            $cron
+
+            В человекочитаемом виде:
+            $humanReadable
+        """.trimIndent()
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, shareText)
+        }
+
+        startActivity(Intent.createChooser(intent, "Поделиться через"))
+    }
+
+    private fun showDetailsDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.details_title))
+            .setMessage(getString(R.string.description))
+            .setPositiveButton(getString(R.string.ok), null)
+            .setNeutralButton(getString(R.string.details_more_about_cron)) { _, _ ->
+                startActivity(Intent(this, CronDetailsActivity::class.java))
+            }
+            .show()
+    }
+
+    private fun readCronInput(): CronInput {
+        return CronInput(
+            includeSeconds = cbIncludeSeconds.isChecked,
+            seconds = normalizeField(etSeconds.text.toString()),
+            minutes = normalizeField(etMinutes.text.toString()),
+            hours = normalizeField(etHours.text.toString()),
+            dayOfMonth = normalizeField(etDayOfMonth.text.toString()),
+            month = getSelectedMonth(),
+            dayOfWeek = getSelectedDayOfWeek()
+        )
     }
 
     private fun normalizeField(value: String): String {
@@ -301,102 +180,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getSelectedMonth(): String {
-        val spinnerMonth = findViewById<Spinner>(R.id.spinnerMonth)
         val selected = spinnerMonth.selectedItem.toString()
         return if (selected.startsWith("*")) "*" else selected
     }
 
     private fun getSelectedDayOfWeek(): String {
-        val spinnerDayOfWeek = findViewById<Spinner>(R.id.spinnerDayOfWeek)
         val selected = spinnerDayOfWeek.selectedItem.toString()
         return if (selected.startsWith("*")) "*" else selected
     }
 
-    private fun validateCronFields(
-        includeSeconds: Boolean,
-        seconds: String,
-        minutes: String,
-        hours: String,
-        dayOfMonth: String
-    ): String? {
-        if (includeSeconds) {
-            val error = validateSimpleCronPart(
-                value = seconds,
-                min = 0,
-                max = 59,
-                fieldName = "Секунды"
-            )
-            if (error != null) return error
-        }
-
-        validateSimpleCronPart(
-            value = minutes,
-            min = 0,
-            max = 59,
-            fieldName = "Минуты"
-        )?.let { return it }
-
-        validateSimpleCronPart(
-            value = hours,
-            min = 0,
-            max = 23,
-            fieldName = "Часы"
-        )?.let { return it }
-
-        validateSimpleCronPart(
-            value = dayOfMonth,
-            min = 1,
-            max = 31,
-            fieldName = "День месяца"
-        )?.let { return it }
-
-        return null
-    }
-
-    private fun validateSimpleCronPart(
-        value: String,
-        min: Int,
-        max: Int,
-        fieldName: String
-    ): String? {
-        if (value == "*") {
-            return null
-        }
-
-        if (value.startsWith("*/")) {
-            val stepPart = value.removePrefix("*/")
-            val step = stepPart.toIntOrNull()
-            if (step == null || step <= 0) {
-                return "$fieldName: шаг должен быть положительным числом, например */5"
-            }
-            return null
-        }
-
-        val number = value.toIntOrNull()
-        if (number == null) {
-            return "$fieldName: допустимы только *, число или шаг вида */5"
-        }
-
-        if (number !in min..max) {
-            return "$fieldName: допустимый диапазон $min..$max"
-        }
-
-        return null
-    }
-
-    private fun copyResultToClipboard() {
-        val tvResult = findViewById<TextView>(R.id.tvResult)
-        val text = tvResult.text.toString().trim()
-
-        if (text.isEmpty()) {
-            Toast.makeText(this, "Нет результата для копирования", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("cron_expression", text)
-        clipboard.setPrimaryClip(clip)
-
-        Toast.makeText(this, "Скопировано: $text", Toast.LENGTH_SHORT).show()
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
