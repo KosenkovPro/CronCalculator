@@ -70,6 +70,7 @@ class MainActivity : AppCompatActivity() {
 
         val cronExpression = CronExpressionBuilder.build(input)
         binding.tvResult.text = cronExpression
+        binding.tvHumanReadableResult.text = CronHumanReadableFormatter.format(cronExpression)
 
         ClipboardUtils.copyText(this, "cron_expression", cronExpression)
 

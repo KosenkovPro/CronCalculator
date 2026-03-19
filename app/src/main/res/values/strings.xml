@@ -69,6 +69,9 @@
         <item>SUN</item>
     </string-array>
 
+    <string name="human_readable_result">В человекочитаемом виде</string>
+    <string name="default_human_readable_result">Описание появится здесь</string>
+
     <string name="share">Поделиться</string>
 
     <string name="cron_details_screen_title">Подробнее о CRON</string>
@@ -95,4 +98,6 @@
     <string name="cron_block_alternative_text">Для простых регулярных задач CRON отлично подходит. Но если нужны зависимости, более точное управление, устойчивость к пропущенным запускам и интеграция с systemd, стоит посмотреть на systemd.timer.</string>
 
     <string name="details_more_about_cron">Подробнее о CRON</string>
+
+
 </resources>
